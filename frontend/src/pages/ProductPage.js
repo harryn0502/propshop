@@ -1,11 +1,22 @@
 import { Link, useParams } from "react-router-dom";
 import { Row, Col, Image, ListGroup, Card, Button } from "react-bootstrap";
-import products from "../products";
 import Ratings from "../components/Ratings";
+import { useCallback, useEffect, useState } from "react";
 
 function ProductPage() {
   const { id } = useParams();
-  const product = products.find((product) => product._id === id);
+
+  const [product, setProduct] = useState([]);
+  const getProduct = useCallback(async () => {
+    const json = await (
+      await fetch(`/api/products/${id}`)
+    ).json();
+    setProduct(json);
+  }, [id]);
+  useEffect(() => {
+    getProduct();
+  }, [getProduct]);
+
   return (
     <div>
       <Link to="/" className="btn btn-light my-3">
