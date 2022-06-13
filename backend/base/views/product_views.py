@@ -1,17 +1,11 @@
-from itertools import product
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
 
+from django.contrib.auth.models import User
 from base.serialiser import ProductSerialiser
-
-from .models import Product
-from .products import products
-
-# Create your views here.
-
-@api_view(['GET'])
-def getRoutes(request):
-    return Response({'message':"Hello World"})
+from base.models import Product
+from base.products import products
 
 @api_view(['GET'])
 def getProducts(request):
