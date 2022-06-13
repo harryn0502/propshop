@@ -23,13 +23,12 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class UserSerialiser(ModelSerializer):
-    name = SerializerMethodField(read_only=True)
     _id = SerializerMethodField(read_only=True)
     isAdmin = SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
-        fields = ['_id', 'username', 'email', 'name', 'isAdmin']
+        fields = ['_id', 'username', 'email', 'first_name', 'last_name', 'isAdmin']
 
     def get__id(self, obj):
         return obj.id
@@ -37,16 +36,13 @@ class UserSerialiser(ModelSerializer):
     def get_isAdmin(self, obj):
         return obj.is_staff
 
-    def get_name(self, obj):
-        return obj.get_full_name()
-
 
 class UserSerialiserWithToken(UserSerialiser):
     token = SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
-        fields = ['_id', 'username', 'email', 'name', 'isAdmin', 'token']
+        fields = ['_id', 'username', 'email', 'first_name', 'last_name', 'isAdmin', 'token']
 
     def get_token(self, obj):
         refresh = RefreshToken.for_user(obj)
