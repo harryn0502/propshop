@@ -4,20 +4,19 @@ import {
   USER_LOGIN_FAIL,
   USER_LOGOUT,
 } from "../constants/userConstants";
+import axios from "axios";
 
 export const login = (email, password) => async (dispatch) => {
   try {
     dispatch({ type: USER_LOGIN_REQUEST });
-    const json = await fetch("/api/users/login/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const { data } = await axios.post(
+      "/api/users/login/",
+      {
         username: email,
         password: password,
-      }),
-    });
-    const data = await json.json();
-    if (!json.ok) throw data;
+      },
+      { headers: { "Content-Type": "application/json" } }
+    );
 
     dispatch({ type: USER_LOGIN_SUCCESS, payload: data });
 
@@ -26,9 +25,9 @@ export const login = (email, password) => async (dispatch) => {
     dispatch({
       type: USER_LOGIN_FAIL,
       payload:
-        error && error.detail
-          ? error.detail
-          : "",
+        error.response && error.response.data.detail
+          ? error.response.data.detail
+          : error.message,
     });
   }
 };
