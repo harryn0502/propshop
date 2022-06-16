@@ -1,6 +1,12 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useParams, Link, useNavigate } from "react-router-dom";
+import {
+  useLocation,
+  useParams,
+  Link,
+  useNavigate,
+  createSearchParams,
+} from "react-router-dom";
 import { addToCart, removeFromCart } from "../actions/cartActions";
 import {
   Col,
@@ -33,7 +39,10 @@ function CartPage() {
   };
 
   const checkoutHandler = () => {
-    navigate("/login?redirect=shipping");
+    navigate({
+      pathname: "/login",
+      search: `?${createSearchParams({ redirect: "shipping" })}`,
+    });
   };
 
   return (
@@ -94,14 +103,14 @@ function CartPage() {
               <ListGroup.Item>
                 <h2>
                   Subtotal (
-                  {cartItems.reduce((acc, item) => acc + Number(item.qty), 0)})
-                  items
+                  {cart.cartItems
+                    .reduce((acc, item) => acc + item.qty, 0)}
+                  ) items
                 </h2>
                 £
-                {cartItems.reduce(
-                  (acc, item) => acc + item.price * Number(item.qty),
-                  0
-                )}
+                {cart.cartItems
+                  .reduce((acc, item) => acc + Number(item.price) * item.qty, 0)
+                  .toFixed(2)}
               </ListGroup.Item>
 
               <ListGroup.Item className="d-grid">
