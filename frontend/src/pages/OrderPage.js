@@ -1,10 +1,12 @@
 import { Row, Col, ListGroup, Image, Card } from "react-bootstrap";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
-import { getOrderDetails } from "../actions/orderActions";
+import { getOrderDetails, payOrder } from "../actions/orderActions";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { ORDER_PAY_RESET } from "../constants/orderConstants";
 
 function OrderPage() {
   const dispatch = useDispatch();
@@ -13,11 +15,22 @@ function OrderPage() {
   const orderDetails = useSelector((state) => state.orderDetails);
   const { order, error, loading } = orderDetails;
 
+  const [sdkReady, setSDKReady] = useState(false);
+  const orderPay = useSelector((state) => state.orderPay);
+  const { loading: loadingPay, success: successPay } = orderPay;
+
   useEffect(() => {
-    if (!order || order._id !== Number(orderId)) {
+    if (!order || successPay || order._id !== Number(orderId)) {
+      dispatch({ type: ORDER_PAY_RESET });
       dispatch(getOrderDetails(orderId));
+    } else if (!order.isPaid) {
+      if (!window.paypal) {
+        addPayPalScript();
+      } else {
+        setSDKReady(true);
+      }
     }
-  }, [order, orderId, dispatch]);
+  }, [order, orderId, dispatch, successPay]);
 
   if (!loading && !error) {
     order.itemsPrice = order.orderItems
@@ -35,6 +48,21 @@ function OrderPage() {
     } else {
       return "Unknown User";
     }
+  };
+  const addPayPalScript = () => {
+    const script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src =
+      `https://www.paypal.com/sdk/js?client-id=${process.env.REACT_APP_CLIENT_ID}&enable-funding=venmo&currency=GBP`;
+    script.async = true;
+    script.onload = () => {
+      setSDKReady(true);
+    };
+    document.body.appendChild(script);
+  };
+
+  const successPaymentHandler = (paymentResult) => {
+    dispatch(payOrder(orderId, paymentResult));
   };
 
   return loading ? (
@@ -64,7 +92,9 @@ function OrderPage() {
                 {order.shippingAddress.country}
               </p>
               {order.isDelivered ? (
-                <Message variant="success">Dilivered on {order.deliveredAt}</Message>
+                <Message variant="success">
+                  Dilivered on {order.deliveredAt}
+                </Message>
               ) : (
                 <Message variant="warning">Not Delivered</Message>
               )}
@@ -147,6 +177,51 @@ function OrderPage() {
                   <Col>£{order.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
+
+              {!order.isPaid && (
+                <ListGroup.Item>
+                  {loadingPay && <Loader />}
+                  {!sdkReady ? (
+                    <Loader />
+                  ) : (
+                    <PayPalScriptProvider
+                      options={{
+                        "client-id":
+                          process.env.REACT_APP_CLIENT_ID,
+                        currency: "GBP",
+                        intent: "capture",
+                        "enable-funding": "paylater",
+                        locale: "en_GB",
+                      }}
+                    >
+                      <PayPalButtons
+                        style={{ layout: "vertical" }}
+                        createOrder={(data, actions) => {
+                          return actions.order
+                            .create({
+                              purchase_units: [
+                                {
+                                  amount: {
+                                    currency_code: "GBP",
+                                    value: order.totalPrice,
+                                  },
+                                },
+                              ],
+                            })
+                            .then((orderId) => {
+                              return orderId;
+                            });
+                        }}
+                        onApprove={(data, actions) => {
+                          return actions.order
+                            .capture()
+                            .then(successPaymentHandler);
+                        }}
+                      />
+                    </PayPalScriptProvider>
+                  )}
+                </ListGroup.Item>
+              )}
             </ListGroup>
           </Card>
         </Col>
