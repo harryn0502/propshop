@@ -34,6 +34,7 @@ def registerUser(request):
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def updateUserProfile(request):
@@ -52,6 +53,7 @@ def updateUserProfile(request):
 
     return Response(serialiser.data)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getUserProfile(request):
@@ -66,3 +68,11 @@ def getUsers(request):
     users = User.objects.all()
     serialiser = UserSerialiser(users, many=True)
     return Response(serialiser.data)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def deleteUser(request, id):
+    usersForDeletion = User.objects.get(id=id)
+    usersForDeletion.delete()
+    return Response("User was deleted")
