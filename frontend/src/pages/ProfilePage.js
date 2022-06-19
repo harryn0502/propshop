@@ -20,8 +20,8 @@ function ProfilePage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const userDatails = useSelector((state) => state.userDatails);
-  const { error, loading, user } = userDatails;
+  const userDetails = useSelector((state) => state.userDetails);
+  const { error, loading, user } = userDetails;
 
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
@@ -54,7 +54,7 @@ function ProfilePage() {
     if (!userInfo) {
       navigate("/login");
     } else {
-      if (!user || !user.first_name || success) {
+      if (!user || !user.first_name || success || userInfo._id !== user._id) {
         dispatch({ type: USER_UPDATE_RESET });
         dispatch(getUserDetails("profile"));
         dispatch(listMyOrders());
