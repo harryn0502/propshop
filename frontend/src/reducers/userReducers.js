@@ -63,3 +63,19 @@ export const userUpdateReducer = (state = {}, action) => {
       return state;
   }
 };
+
+export const userListReducer = (state = { users: [] }, action) => {
+  switch (action.type) {
+    case constants.USER_LIST_REQUEST:
+      return { loading: true };
+    case constants.USER_LIST_SUCCESS:
+      return { loading: false, users: action.payload };
+    case constants.USER_LIST_FAIL:
+      return { loading: false, error: action.payload };
+    case constants.USER_LIST_RESET:
+      return { users: [] };
+
+    default:
+      return state;
+  }
+};

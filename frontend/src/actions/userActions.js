@@ -33,6 +33,7 @@ export const logout = () => (dispatch) => {
   dispatch({ type: constants.USER_LOGOUT });
   dispatch({ type: constants.USER_DETAILS_RESET });
   dispatch({ type: ORDER_LIST_MY_RESET });
+  dispatch({ type: constants.USER_LIST_RESET });
 };
 
 export const register =
@@ -111,6 +112,31 @@ export const updateUser = (user) => async (dispatch, getState) => {
   } catch (error) {
     dispatch({
       type: constants.USER_UPDATE_FAIL,
+      payload:
+        error.response && error.response.data.detail
+          ? error.response.data.detail
+          : error.message,
+    });
+  }
+};
+
+export const listUsers = () => async (dispatch, getState) => {
+  try {
+    const {
+      userLogin: { userInfo },
+    } = getState();
+
+    dispatch({ type: constants.USER_LIST_REQUEST });
+    const { data } = await axios.get("/api/users/", {
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    });
+    dispatch({ type: constants.USER_LIST_SUCCESS, payload: data });
+  } catch (error) {
+    dispatch({
+      type: constants.USER_LIST_FAIL,
       payload:
         error.response && error.response.data.detail
           ? error.response.data.detail

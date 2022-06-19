@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -28,9 +28,6 @@ def addOrderItems(request):
             paymentMethod=data['paymentMethod'],
             shippingPrice=data['shippingPrice'],
             totalPrice=data['totalPrice'],
-            # isPaid=data['']
-            # paidAt=data['']
-            # isDelivered=data['']
 
         )
         # Shipping Address
@@ -91,6 +88,6 @@ def updateOrderToPay(request, id):
     order = Order.objects.get(_id=id)
 
     order.isPaid = True
-    order.paidAt = datetime.now()
+    order.paidAt = timezone.now()
     order.save()
     return Response("Paid")
