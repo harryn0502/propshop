@@ -104,3 +104,28 @@ export const listMyOrders = () => async (dispatch, getState) => {
     });
   }
 };
+
+export const listOrders = () => async (dispatch, getState) => {
+    try {
+      const {
+        userLogin: { userInfo },
+      } = getState();
+  
+      dispatch({ type: constants.ORDER_LIST_REQUEST });
+      const { data } = await axios.get('/api/orders/', {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      });
+      dispatch({ type: constants.ORDER_LIST_SUCCESS, payload: data });
+    } catch (error) {
+      dispatch({
+        type: constants.ORDER_LIST_FAIL,
+        payload:
+          error.response && error.response.data.detail
+            ? error.response.data.detail
+            : error.message,
+      });
+    }
+  };

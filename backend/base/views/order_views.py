@@ -66,6 +66,14 @@ def getMyOrders(request):
     return Response(serialiser.data)
 
 @api_view(['GET'])
+@permission_classes([IsAdminUser])
+def getOrders(request):
+    orders = Order.objects.all()
+    serialiser = OrderSerialiser(orders, many=True)
+
+    return Response(serialiser.data)
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getOrderById(request, id):
     user = request.user
