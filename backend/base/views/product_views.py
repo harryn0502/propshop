@@ -7,6 +7,9 @@ from django.contrib.auth.models import User
 from base.serialiser import ProductSerialiser
 from base.models import Product
 from base.products import products
+import os
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 @api_view(['GET'])
@@ -45,8 +48,10 @@ def createProduct(request):
 @permission_classes([IsAdminUser])
 def deleteProduct(request, id):
     product = Product.objects.get(_id=id)
-    product.delete()
+    if product.image != '/sample.jpg':
+        os.remove(str(settings.STATICFILES_DIRS[0])+'/images/'+str(product.image))
 
+    product.delete()
     return Response("Product")
 
 

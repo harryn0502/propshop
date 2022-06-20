@@ -56,7 +56,7 @@ export const deleteProduct = (id) => async (dispatch, getState) => {
         } = getState();
 
         dispatch({ type: PRODUCT_DELETE_REQUEST });
-        const { data } = await axios.delete(`/api/products/delete/${id}/`, {
+        await axios.delete(`/api/products/delete/${id}/`, {
             headers: {
                 "Content-type": "application/json",
                 Authorization: `Bearer ${userInfo.token}`,
