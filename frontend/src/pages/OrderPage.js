@@ -53,7 +53,7 @@ function OrderPage() {
                 setSDKReady(true);
             }
         }
-    }, [order, orderId, dispatch, successPay, successDeliver]);
+    }, [order, orderId, dispatch, successPay, successDeliver, navigate, userInfo]);
 
     if (!loading && !error) {
         order.itemsPrice = order.orderItems
