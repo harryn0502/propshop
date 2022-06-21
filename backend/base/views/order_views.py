@@ -99,3 +99,13 @@ def updateOrderToPay(request, id):
     order.paidAt = timezone.now()
     order.save()
     return Response("Paid")
+
+@api_view(['PUT'])
+@permission_classes([IsAdminUser])
+def updateOrderToDeliver(request, id):
+    order = Order.objects.get(_id=id)
+
+    order.isDelivered = True
+    order.deliveredAt = timezone.now()
+    order.save()
+    return Response("Delivered")
