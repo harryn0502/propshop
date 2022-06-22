@@ -14,7 +14,11 @@ from django.conf.urls.static import static
 
 @api_view(['GET'])
 def getProducts(request):
-    products = Product.objects.all()
+    query = request.query_params.get("keyword")
+    if query == None:
+        query = ""
+
+    products = Product.objects.filter(name__icontains=query)
     serialiser = ProductSerialiser(products, many=True)
     return Response(serialiser.data)
 
