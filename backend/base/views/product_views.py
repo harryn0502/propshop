@@ -5,7 +5,7 @@ from rest_framework import status
 
 from django.contrib.auth.models import User
 from base.serialiser import ProductSerialiser
-from base.models import Product
+from base.models import Product, Review
 from base.products import products
 import os
 from django.conf import settings
@@ -49,7 +49,8 @@ def createProduct(request):
 def deleteProduct(request, id):
     product = Product.objects.get(_id=id)
     if product.image != '/sample.jpg':
-        os.remove(str(settings.STATICFILES_DIRS[0])+'/images/'+str(product.image))
+        os.remove(
+            str(settings.STATICFILES_DIRS[0])+'/images/'+str(product.image))
 
     product.delete()
     return Response("Product")
@@ -87,3 +88,42 @@ def uploadImage(request):
     product.save()
 
     return Response("Image was uploaded")
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def createProductReview(request, id):
+    user = request.user
+    product = Product.objects.get(_id=id)
+    data = request.data
+
+    # 1 - Review already exists
+    doesExist = product.review_set.filter(user=user).exists()
+
+    if doesExist:
+        content = {'detail': "Product already reviewed"}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+    # 2 - No rating or 0
+    elif data['rating'] == 0:
+        content = {'detail': "Please select a rating"}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
+    # 3 - Create Review
+    else:
+        review = Review.objects.create(
+            user=user,
+            product=product,
+            name=user.username,
+            rating=data['rating'],
+            comment=data['comment'],
+        )
+
+        reviews = product.review_set.all()
+        product.numReviews = len(reviews)
+
+        total = 0
+        for each in reviews:
+            total += each.rating
+        product.rating = total/len(reviews)
+        product.save()
+
+    return Response("Review Added")
