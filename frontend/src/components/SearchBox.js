@@ -11,7 +11,7 @@ function SearchBox() {
         if (keyword) {
             navigate({
                 pathname: "/",
-                search: `?${createSearchParams({ keyword })}`,
+                search: `?${createSearchParams({ keyword })}&page=${1}`,
             });
         } else {
             navigate(location.pathname);

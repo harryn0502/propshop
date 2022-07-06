@@ -10,6 +10,7 @@ from base.products import products
 import os
 from django.conf import settings
 from django.conf.urls.static import static
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 @api_view(['GET'])
@@ -19,9 +20,31 @@ def getProducts(request):
         query = ""
 
     products = Product.objects.filter(name__icontains=query)
+
+    page = query = request.query_params.get("page")
+    paginator = Paginator(products, 2)
+
+    try:
+        products = paginator.page(page)
+    except PageNotAnInteger:
+        products = paginator.page(1)
+    except EmptyPage:
+        products = paginator.page(paginator.num_pages)
+
+    if page == None:
+        page = 1
+
+    page = int(page)
+
+    serialiser = ProductSerialiser(products, many=True)
+    return Response({'products': serialiser.data, 'page': page, 'pages': paginator.num_pages})
+
+@api_view(['GET'])
+def getTopProducts(request):
+    products = Product.objects.filter(rating__gte=4).order_by('-rating')[0:5]
+
     serialiser = ProductSerialiser(products, many=True)
     return Response(serialiser.data)
-
 
 @api_view(['GET'])
 def getProduct(request, id):
